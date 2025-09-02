@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Markdown → HTML コンバータ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/js-beautify@1.15.4/js/lib/beautify-html.js"></script>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem; }
+      textarea { width: 100%; height: 240px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+      button { margin-top: 1rem; padding: 0.6rem 1rem; }
+      details { margin: 0.25rem 0 0.5rem 0; }
+      summary { cursor: pointer; user-select: none; }
+      h1,h2,h3,h4,h5,h6 { display: inline; margin: 0; }
+      /*pre { background-color: #f6f8fa; padding: 0.5em; overflow-x:auto; }*/
+      code { background-color: #f6f8fa; padding: 0 0.2em; }
+      ul, ol { margin: 0.25em 0 0.5em 1.5em; }
+      blockquote { margin: 0.5em 0; padding-left: 1em; border-left: 3px solid #ddd; color:#555; }
+      .code-block {
+        font-family: monospace;
+        background-color: #f6f8fa;
+        padding: 0.5em;
+        overflow-x: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Markdown → HTML コンバータ</h1>
+    <p>Markdownを貼り付けて「変換＆ダウンロード」を押すと、見出し毎にアコーディオン構造にまとめたHTMLを生成します。</p>
+    <details>
+      <summary>
+        <h3>対応済Markdown記法</h3>
+      </summary>
+      <ol>
+      <li>見出し</li>
+      <ul>
+        <li>h1〜h6タグに対応済。</li>
+        <li>例:
+          <div class="code-block"># Heading 1
+            <br>## Heading 2
+          </div>
+        </li>
+      </ul>
+      <li>改行・空行</li>
+      <ul>
+        <li>改行のみで対応。行末のbrタグや半角スペースは改行には影響せず、そのまま出力される</li>
+        <li>1行空けも2行空けも得られる結果は同様。pタグで対応されるため、空行をたくさん入れても空白スペースは増えない。</li>
+      </ul>
+      <li>リスト</li>
+      <ul>
+        <li>例:
+          <div class="code-block">- Unordered list item 1
+            <bre>
+            <pre style="margin-block: auto;">  - Nested item 1</pre>
+            <pre style="margin-block: auto;">  - Nested item 2</pre>- Unordered list item 2
+          </div>
+        </li>
+      </ul>
+      <li>番号付きリスト</li>
+      <ul>
+        <li>例:
+          <div class="code-block">1. Ordered item 1
+            <br>2. Ordered item 2
+            <br>
+            <pre style="margin-block: auto;">  1. Nested ordered 1</pre>
+            <pre style="margin-block: auto;">  2. Nested ordered 2</pre>
+          </div>
+        </li>
+      </ul>
+      <li>コード</li>
+      <ul>
+        <li>インライン:
+          <div class="code-block">`テキストやコード` </div>
+        </li>
+        <li style="margin-top:1em;">複数行:
+          <div class="code-block">```
+            <br>コード1
+            <br>コード2
+            <br>コード3
+            <br>```
+          </div>
+        </li>
+      </ul>
+      <li>引用</li>
+      <ul>
+        <li>例:
+          <div class="code-block">>This is a blockquote.
+            <br>>It can span multiple lines and include **Markdown** syntax.
+          </div>
+        </li>
+      </ul>
+      <li>リンク</li>
+      <ul>
+        <li>例:
+          <div class="code-block">[タイトル](URL) </div>
+        </li>
+      </ul>
+      <li>画像</li>
+      <ul>
+        <li>例:
+          <div class="code-block">![代替テキスト](URL) </div>
+        </li>
+      </ul>
+      <li>テーブル</li>
+      <ul>
+        <li>例:
+          <div class="code-block">
+            <pre style="margin-block: auto;">| Name       | Age | City      |</pre>
+            <pre style="margin-block: auto;">|------------|-----|-----------|</pre>
+            <pre style="margin-block: auto;">| Alice      | 25  | New York  |</pre>
+            <pre style="margin-block: auto;">| Bob        | 30  | London    |</pre>
+            <pre style="margin-block: auto;">| Charlie    | 28  | Tokyo     |</pre>
+          </div>
+        </li>
+      </ul>
+      <li>太字</li>
+      <ul>
+        <li>例:
+          <div class="code-block">**bold** </div>
+        </li>
+      </ul>
+      <li>斜体</li>
+      <ul>
+        <li>例:
+          <div class="code-block">*italic* </div>
+        </li>
+      </ul>
+      <li>下線</li>
+      <ul>
+        <li>例:
+          <div class="code-block">__underline__ </div>
+        </li>
+      </ul>
+      <li>打ち消し線</li>
+      <ul>
+        <li>例:
+          <div class="code-block">~~strikethrough~~ </div>
+        </li>
+      </ul>
+      <li>水平線</li>
+      <ul>
+        <li>例:
+          <div class="code-block">---
+            <br>or
+            <br>***
+            <br>or
+            <br>___
+          </div>
+        </li>
+      </ul>
+    </details>
+    <details>
+      <summary>
+        <h3>特殊な文字列の装飾</h3>
+      </summary>
+      <ol>
+      <li>
+        <strong>
+          <code>{}</code>
+        </strong>で囲った文字列
+      </li>
+      <ul>
+        <li>ファイルを開く度にテキストの置換が可能です。</li>
+        <li>例:
+          <code>{HO1}</code>→ 開いたときに「花子」などに置換可能
+        </li>
+      </ul>
+      <li>
+        <strong>
+          <code>@@テキスト@@</code>
+        </strong>で囲った文字列
+      </li>
+      <ul>
+        <li>デフォルトで文字色が赤色（#FF0000）になります。</li>
+        <li>例:
+          <code>@@主人公@@</code>→
+          <span style="color:#f00">主人公</span>と表示
+        </li>
+      </ul>
+      <li>
+        <strong>
+          <code>@@#RRGGBB テキスト@@</code>
+        </strong>で囲った文字列
+      </li>
+      <ul>
+        <li>指定した色で文字が表示されます（3桁・6桁カラーコード対応）。</li>
+        <li>例:
+          <code>@@#f00 赤文字@@</code>→
+          <span style="color:#f00">赤文字</span>と表示
+        </li>
+        <li>例:
+          <code>@@#0054ff 青文字@@</code>→
+          <span style="color:#0054ff">青文字</span>と表示
+        </li>
+      </ul>
+      <li>
+        <strong>
+          <code>%%テキスト%%</code>
+        </strong>で囲った文字列
+      </li>
+      <ul>
+        <li>デフォルトで文字背景が橙色（#FFA500）になります。</li>
+        <li>例:
+          <code>%%強調%%</code>→
+          <span style="background-color:#FFA500">強調</span>と表示
+        </li>
+      </ul>
+      <li>
+        <strong>
+          <code>%%#RRGGBB テキスト%%</code>
+        </strong>で囲った文字列
+      </li>
+      <ul>
+        <li>指定した色で文字の背景色を変更できます（3桁・6桁カラーコード対応）。</li>
+        <li>例:
+          <code>%%#a6ff4a 背景色%%</code>→
+          <span style="background-color:#a6ff4a">背景色</span>と表示
+        </li>
+      </ul>
+    </details>
+    <textarea id="mdInput" placeholder="Markdownを入力"></textarea>
+    <br>
+    <button id="convertBtn">変換＆ダウンロード</button>
+    <p>このアプリには
+      <a href="https://github.com/beautify-web/js-beautify" target="_blank" rel="nofollow noreferrer">js-beautify</a>を使用しています。
+    </p>
+    <script src="converter.js"></script>
+  </body>
+</html>
