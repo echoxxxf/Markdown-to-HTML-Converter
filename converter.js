@@ -137,18 +137,29 @@ function markdownToPrettyHtml(md){
     if(inCodeBlock){ push(escapeHtml(line)); continue; }
 
     // Headings (#, ##, ...)
-    const h=line.match(/^(#{1,6})\s+(.*)$/);
-    if(h){
-      const level=h[1].length;
-      const text=inlineMarkdown(h[2].trim());
+    const h = line.match(/^(#{1,6})\s+(.*)$/);
+    if (h) {
+      const level = h[1].length;
+      const rawText = h[2].trim();            // 比較用の元テキスト（HTML を含まない）
+      const textHtml = inlineMarkdown(rawText); // 表示用に変換した HTML
       flushParagraph();
-      while(stack.length && stack[stack.length-1].level>=level){
-         push('</details>');
-         stack.pop();
+
+      // 既存の詳細（details）スタックは、従来どおり深い/同レベルを閉じる
+      while (stack.length && stack[stack.length - 1].level >= level) {
+        push('</details>');
+        stack.pop();
       }
+
+      // 特例：レベル1かつ本文が正確に "チェックリスト" のときは <details> に包まない
+      if (level === 1 && rawText === 'ᴄʜᴇᴄᴋʟɪꜱᴛ') {
+        push(`<h1>${textHtml}</h1>`);
+        continue;
+      }
+
+      // 通常（それ以外）は従来どおり <details><summary> を作る
       push(`<details style="margin-left:${level}em">`);
-      push(`<summary><h${level}>${text}</h${level}></summary>`);
-      stack.push({level});
+      push(`<summary><h${level}>${textHtml}</h${level}></summary>`);
+      stack.push({ level });
       continue;
     }
 
@@ -159,8 +170,19 @@ function markdownToPrettyHtml(md){
       const indent = listMatch[1].length;
       const level = Math.floor(indent / 2) + 1; // 2 spaces = 1 level
       const type = listMatch[2].match(/\d+\./)?'ol':'ul';
-      const text = inlineMarkdown(listMatch[3]);
+      let text = listMatch[3];
 
+      // ✅ チェックボックス対応
+      const checkboxMatch = text.match(/^\[( |x|X)\]\s+(.*)$/);
+      if(checkboxMatch){
+        const checked = checkboxMatch[1].toLowerCase() === 'x' ? ' checked' : '';
+        const label = inlineMarkdown(checkboxMatch[2]);
+        text = `<label><input type="checkbox"${checked}> ${label}</label>`;
+      } else {
+        text = inlineMarkdown(text);
+      }
+
+      // 階層の調整
       while(listStack.length && (listStack[listStack.length-1].level > level || listStack[listStack.length-1].type !== type)){
         push(`</${listStack.pop().type}>`);
       }
@@ -173,6 +195,7 @@ function markdownToPrettyHtml(md){
       push(`<li>${text}</li>`);
       continue;
     } else {
+      // ✅ リスト以外が来たらリストを閉じる
       while(listStack.length){ push(`</${listStack.pop().type}>`); }
     }
 
@@ -244,11 +267,22 @@ function markdownToPrettyHtml(md){
   flushParagraph();
   while(stack.length){ push('</details>'); stack.pop(); }
 
-  return out.join('\n');
+  const fullHtml = out.join('\n');
+
+  // --- Extract checklist section ---
+  const checklistMatch = fullHtml.match(/<h1>ᴄʜᴇᴄᴋʟɪꜱᴛ<\/h1>[\s\S]*$/);
+  let checklistHtml = "";
+  let bodyHtml = fullHtml;
+  if (checklistMatch) {
+    checklistHtml = checklistMatch[0];
+    bodyHtml = fullHtml.replace(checklistMatch[0], ""); // remove from main body
+  }
+
+  return { bodyHtml, checklistHtml };
 }
 
 // --- Wrap converted body with full HTML document (using external script for placeholders) ---
-function buildDownloadHtml(prettyBody) {
+function buildDownloadHtml(bodyHtml, checklistHtml) {
   return `<!DOCTYPE html>
 <html lang="ja">
   <head>
@@ -257,22 +291,65 @@ function buildDownloadHtml(prettyBody) {
     <title>Converted Markdown</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css">
     <style>
+      /* Checklist widget */
+      #checklist-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 300px;
+        max-height: 60vh;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        border-radius: 8px;
+        background: #fff;
+        overflow-y: auto;
+        z-index: 9999;
+        padding: 1em;
+      }
+      #checklist-toggle {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #2da44e;
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+        cursor: pointer;
+        z-index: 10000;
+      }
+      #checklist-container.open {
+        transform: translateY(0);
+      }
+      
+      /* Dark mode */
       @media (prefers-color-scheme: dark) {
         body { background-color:#0d1117; color:#c9d1d9; }
         .markdown-body { background-color:transparent; }
+        #checklist-container { background: #161b22; color:#c9d1d9; }
       }
     </style>
   </head>
   <body>
     <article class="markdown-body">
-${prettyBody}
+${bodyHtml}
     </article>
+
+    ${checklistHtml ? `
+    <button id="checklist-toggle">☑</button>
+    <div id="checklist-container" class="markdown-body">
+      ${checklistHtml}
+    </div>` : ""}
+
     <script>
 (function(){
   try {
     var seen = Object.create(null);
     var article = document.querySelector("article");
-    article.innerHTML = article.innerHTML.replace(/\{([^\}]+)\}/g, function(m,key){
+    article.innerHTML = article.innerHTML.replace(/\\{([^\\}]+)\\}/g, function(m,key){
       if(!(key in seen)){
         var v = prompt("「"+key+"」に入れるテキストを入力してください:","");
         seen[key] = (v && v.length) ? v : m;
@@ -280,6 +357,15 @@ ${prettyBody}
       return seen[key];
     });
   } catch(e) { console.error(e); }
+
+  // Checklist toggle
+  var toggle = document.getElementById("checklist-toggle");
+  var container = document.getElementById("checklist-container");
+  if (toggle && container) {
+    toggle.addEventListener("click", function(){
+      container.classList.toggle("open");
+    });
+  }
 })();
     </script>
   </body>
@@ -300,8 +386,8 @@ function downloadFile(filename,content){
 // --- Main entry: convert textarea input when button is clicked ---
 document.getElementById('convertBtn').addEventListener('click',()=>{
   const md=document.getElementById('mdInput').value||'';
-  const body=markdownToPrettyHtml(md);
-  const full=buildDownloadHtml(body);
+  const { bodyHtml, checklistHtml } = markdownToPrettyHtml(md);
+  const full=buildDownloadHtml(bodyHtml, checklistHtml);
   const prettyBody = html_beautify(full, { indent_size: 2, preserve_newlines: true, max_preserve_newlines: 2 });
   downloadFile('converted.html',prettyBody);
 });

@@ -37,8 +37,9 @@
       <ul>
         <li>h1〜h6タグに対応済。</li>
         <li>例:
-          <div class="code-block"># Heading 1
-            <br>## Heading 2
+          <div class="code-block">
+            # Heading 1<br>
+            ## Heading 2
           </div>
         </li>
       </ul>
@@ -50,19 +51,20 @@
       <li>リスト</li>
       <ul>
         <li>例:
-          <div class="code-block">- Unordered list item 1
-            <bre>
+          <div class="code-block">
+            - Unordered list item 1<br>
             <pre style="margin-block: auto;">  - Nested item 1</pre>
-            <pre style="margin-block: auto;">  - Nested item 2</pre>- Unordered list item 2
+            <pre style="margin-block: auto;">  - Nested item 2</pre>
+            - Unordered list item 2
           </div>
         </li>
       </ul>
       <li>番号付きリスト</li>
       <ul>
         <li>例:
-          <div class="code-block">1. Ordered item 1
-            <br>2. Ordered item 2
-            <br>
+          <div class="code-block">
+            1. Ordered item 1<br>
+            2. Ordered item 2<br>
             <pre style="margin-block: auto;">  1. Nested ordered 1</pre>
             <pre style="margin-block: auto;">  2. Nested ordered 2</pre>
           </div>
@@ -74,19 +76,21 @@
           <div class="code-block">`テキストやコード` </div>
         </li>
         <li style="margin-top:1em;">複数行:
-          <div class="code-block">```
-            <br>コード1
-            <br>コード2
-            <br>コード3
-            <br>```
+          <div class="code-block">
+            ```<br>
+            コード1<br>
+            コード2<br>
+            コード3<br>
+            ```
           </div>
         </li>
       </ul>
       <li>引用</li>
       <ul>
         <li>例:
-          <div class="code-block">>This is a blockquote.
-            <br>>It can span multiple lines and include **Markdown** syntax.
+          <div class="code-block">
+            >This is a blockquote.<br>
+            >It can span multiple lines and include **Markdown** syntax.
           </div>
         </li>
       </ul>
@@ -154,91 +158,99 @@
       <ul>
         <li>例:
           <div class="code-block">
-            > [!NOTE]<br>
-            > Useful information that users should know, even when skimming content.<br>
+            >[!NOTE]<br>
+            >Useful information that users should know, even when skimming content.<br>
             <br>
-            > [!TIP]<br>
-            > Helpful advice for doing things better or more easily.<br>
+            >[!TIP]<br>
+            >Helpful advice for doing things better or more easily.<br>
             <br>
-            > [!IMPORTANT]<br>
-            > Key information users need to know to achieve their goal.<br>
+            >[!IMPORTANT]<br>
+            >Key information users need to know to achieve their goal.<br>
             <br>
-            > [!WARNING]<br>
-            > Urgent info that needs immediate user attention to avoid problems.<br>
+            >[!WARNING]<br>
+            >Urgent info that needs immediate user attention to avoid problems.<br>
             <br>
-            > [!CAUTION]<br>
-            > Advises about risks or negative outcomes of certain actions.
+            >[!CAUTION]<br>
+            >Advises about risks or negative outcomes of certain actions.
           </div>
         </li>
       </ul>
     </details>
-    
     <details>
       <summary>
         <h3>特殊な文字列の装飾</h3>
       </summary>
       <ol>
-      <li>
-        <strong>
-          <code>{}</code>
-        </strong>で囲った文字列
-      </li>
+      <li>文字列の置換</li>
       <ul>
-        <li>ファイルを開く度にテキストの置換が可能です。</li>
-        <li>例:
-          <code>{HO1}</code>→ 開いたときに「花子」などに置換可能
+        <li>
+          <strong><code>{}</code></strong>で囲った文字列は、ファイルを開く度にテキストの置換が可能です。
         </li>
+        <li>例:
+          <code>{HO1}</code> → 開いたときに「花子」などに置換可能
+        </li>
+      </ul>
+      <li>フォント色</li>
+      <ul>
+        <li>デフォルト（赤色）</li>
+        <ul>
+          <li>
+            <strong><code>@@テキスト@@</code></strong>で囲った文字列は、文字色が赤色（#FF0000）になります。
+          </li>
+          <li>例:
+            <code>@@HO1@@</code> → <span style="color:#f00">HO1</span>と表示
+          </li>
+        </ul>
+        <li>色指定</li>
+        <ul>
+          <li>
+            <strong><code>@@#RRGGBB テキスト@@</code></strong>で囲った文字列は、指定した色で文字が表示されます（3桁・6桁カラーコード対応）。
+          </li>
+          <li>例:
+            <code>@@#f00 赤文字@@</code> → <span style="color:#f00">赤文字</span>と表示
+          </li>
+          <li>例:
+            <code>@@#0054ff 青文字@@</code> → <span style="color:#0054ff">青文字</span>と表示
+          </li>
+        </ul>
+      </ul>
+      <li>ハイライト</li>
+      <ul>
+        <li>デフォルト（橙色）</li>
+        <ul>
+          <li>
+            <strong><code>%%テキスト%%</code></strong>で囲った文字列は、文字背景が橙色（#FFA500）になります。
+          </li>
+          <li>例:
+            <code>%%Emphasis%%</code> → <span style="background-color:#FFA500">Emphasis</span>と表示
+          </li>
+        </ul>
+        <li>色指定</li>
+        <ul>
+          <li>
+            <strong>
+              <code>%%#RRGGBB テキスト%%</code>
+            </strong>で囲った文字列は、指定した色で文字の背景色を変更できます（3桁・6桁カラーコード対応）。
+          </li>
+          <li>例:
+            <code>%%#a6ff4a 背景色%%</code> → <span style="background-color:#a6ff4a">背景色</span>と表示
+          </li>
+        </ul>
       </ul>
       <li>
         <strong>
-          <code>@@テキスト@@</code>
-        </strong>で囲った文字列
+          <code># ᴄʜᴇᴄᴋʟɪꜱᴛ</code>
+        </strong>以降の内容
       </li>
       <ul>
-        <li>デフォルトで文字色が赤色（#FF0000）になります。</li>
+        <li>この見出し以降の内容を、画面右下のボトムシートに設定できます。チェックリストとして活用してください。</li>
+        <li>この記述は、すべての内容を入力し終えた最後に入れてください。</li>
         <li>例:
-          <code>@@主人公@@</code>→
-          <span style="color:#f00">主人公</span>と表示
-        </li>
-      </ul>
-      <li>
-        <strong>
-          <code>@@#RRGGBB テキスト@@</code>
-        </strong>で囲った文字列
-      </li>
-      <ul>
-        <li>指定した色で文字が表示されます（3桁・6桁カラーコード対応）。</li>
-        <li>例:
-          <code>@@#f00 赤文字@@</code>→
-          <span style="color:#f00">赤文字</span>と表示
-        </li>
-        <li>例:
-          <code>@@#0054ff 青文字@@</code>→
-          <span style="color:#0054ff">青文字</span>と表示
-        </li>
-      </ul>
-      <li>
-        <strong>
-          <code>%%テキスト%%</code>
-        </strong>で囲った文字列
-      </li>
-      <ul>
-        <li>デフォルトで文字背景が橙色（#FFA500）になります。</li>
-        <li>例:
-          <code>%%強調%%</code>→
-          <span style="background-color:#FFA500">強調</span>と表示
-        </li>
-      </ul>
-      <li>
-        <strong>
-          <code>%%#RRGGBB テキスト%%</code>
-        </strong>で囲った文字列
-      </li>
-      <ul>
-        <li>指定した色で文字の背景色を変更できます（3桁・6桁カラーコード対応）。</li>
-        <li>例:
-          <code>%%#a6ff4a 背景色%%</code>→
-          <span style="background-color:#a6ff4a">背景色</span>と表示
+          <div class="code-block">
+            # ᴄʜᴇᴄᴋʟɪꜱᴛ<br>
+            - [ ] xxx<br>
+            - [ ] xxx
+          </div>
         </li>
       </ul>
     </details>
