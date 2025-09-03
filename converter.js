@@ -302,8 +302,6 @@ document.getElementById('convertBtn').addEventListener('click',()=>{
   const md=document.getElementById('mdInput').value||'';
   const body=markdownToPrettyHtml(md);
   const full=buildDownloadHtml(body);
-  console.log(full)
-const prettyBody = html_beautify(full, { indent_size: 2, preserve_newlines: true, max_preserve_newlines: 2 });
-    console.log(prettyBody)
+  const prettyBody = html_beautify(full, { indent_size: 2, preserve_newlines: true, max_preserve_newlines: 2 });
   downloadFile('converted.html',prettyBody);
 });
